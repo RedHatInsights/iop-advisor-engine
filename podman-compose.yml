@@ -1,0 +1,10 @@
+version: '3'
+services:
+  iop_advisor_engine:
+    build:
+      context: .
+      dockerfile: Containerfile
+    ports:
+      - "24443:24443"
+    volumes:
+      - ./static:/opt/app-root/src/static:z
