@@ -27,7 +27,7 @@ UPLOAD_EXTRACTION_DIR = os.environ.get('UPLOAD_EXTRACTION_DIR', '/tmp')
 
 # Logging
 SIMPLE_LOGS = os.environ.get('SIMPLE_LOGS', '').lower() == 'true'
-STDOUT_LOG_LEVEL = os.environ.get('STDOUT_LOG_LEVEL', 'INFO')
+STDOUT_LOG_LEVEL = os.environ.get('STDOUT_LOG_LEVEL', 'WARNING')
 LOG_DIR = os.environ.get('LOG_DIR', 'logs')
 ENGINE_LOG_FILE = os.path.join(LOG_DIR, os.environ.get('ENGINE_LOG_FILE', 'iop-advisor-engine.log'))
 ENGINE_LOG_LEVEL = os.environ.get('ENGINE_LOG_LEVEL', 'INFO')
@@ -37,66 +37,115 @@ API_LOG_FILE = os.path.join(LOG_DIR, os.environ.get('API_LOG_FILE', 'iop-advisor
 API_LOG_LEVEL = os.environ.get('API_LOG_LEVEL', 'INFO')
 API_MAX_BYTES = os.environ.get('API_MAX_BYTES', 10000)
 API_BACKUP_COUNT = os.environ.get('API_BACKUP_COUNT', 5)
-os.makedirs(LOG_DIR, exist_ok=True) # Ensure logging directory exists
-LOGGING_CONFIG = { 
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'simple': {
-            'format': '%(asctime)s - %(levelname)s - %(message)s'
+FILE_LOGGING = os.environ.get('FILE_LOGGING', '').lower() == 'true'
+
+# Toggle file logging or stdout only
+if FILE_LOGGING:
+    os.makedirs(LOG_DIR, exist_ok=True) # Ensure logging directory exists
+    LOGGING_CONFIG = { 
+        'version': 1,
+        'disable_existing_loggers': True,
+        'formatters': {
+            'simple': {
+                'format': '<%(asctime)s> - %(levelname)s - %(message)s'
+            },
+            'logstash': { 
+                'class': 'logstash_formatter.LogstashFormatter'
+            },
         },
-        'logstash': { 
-            'class': 'logstash_formatter.LogstashFormatter'
+        'handlers': { 
+            'stdout': { 
+                'level': STDOUT_LOG_LEVEL,
+                'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
+                'class': 'logging.StreamHandler'
+            },
+            'engine_file': {
+                'level': ENGINE_LOG_LEVEL,
+                'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': ENGINE_LOG_FILE,
+                'maxBytes': ENGINE_MAX_BYTES,
+                'backupCount': ENGINE_BACKUP_COUNT
+            },
+            'api_file': {
+                'level': API_LOG_LEVEL,
+                'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': API_LOG_FILE,
+                'maxBytes': API_MAX_BYTES,
+                'backupCount': API_BACKUP_COUNT
+            }
         },
-    },
-    'handlers': { 
-        'stdout': { 
-            'level': STDOUT_LOG_LEVEL,
-            'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
-            'class': 'logging.StreamHandler'
+        'loggers': {
+            'engine': {
+                'handlers': ['stdout', 'engine_file'],
+                'level': ENGINE_LOG_LEVEL,
+                'propagate': False
+            },
+            'api': {
+                'handlers': ['stdout', 'api_file'],
+                'level': API_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn': {
+                'handlers': ['stdout', 'api_file'],
+                'level': API_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn.access': {
+                'handlers': ['stdout', 'api_file'],
+                'level': API_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn.error': {
+                'handlers': ['stdout', 'api_file'],
+                'level': API_LOG_LEVEL,
+                'propagate': False
+            }
+        } 
+    }
+else:
+    LOGGING_CONFIG = { 
+        'version': 1,
+        'disable_existing_loggers': True,
+        'formatters': {
+            'simple': {
+                'format': '<%(levelname)s> - %(asctime)s - %(message)s'
+            }
         },
-        'engine_file': {
-            'level': ENGINE_LOG_LEVEL,
-            'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': ENGINE_LOG_FILE,
-            'maxBytes': ENGINE_MAX_BYTES,
-            'backupCount': ENGINE_BACKUP_COUNT
+        'handlers': { 
+            'stdout': { 
+                'level': STDOUT_LOG_LEVEL,
+                'formatter': 'simple',
+                'class': 'logging.StreamHandler',
+                'stream': 'ext://sys.stdout',  # Default is stderr
+            }
         },
-        'api_file': {
-            'level': API_LOG_LEVEL,
-            'formatter': 'simple' if SIMPLE_LOGS else 'logstash',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': API_LOG_FILE,
-            'maxBytes': API_MAX_BYTES,
-            'backupCount': API_BACKUP_COUNT
-        }
-    },
-    'loggers': {
-        'engine': {
-            'handlers': ['stdout', 'engine_file'],
-            'level': ENGINE_LOG_LEVEL,
-            'propagate': False
-        },
-        'api': {
-            'handlers': ['stdout', 'api_file'],
-            'level': API_LOG_LEVEL,
-            'propagate': False
-        },
-        'uvicorn': {
-            'handlers': ['stdout', 'api_file'],
-            'level': API_LOG_LEVEL,
-            'propagate': False
-        },
-        'uvicorn.access': {
-            'handlers': ['stdout', 'api_file'],
-            'level': API_LOG_LEVEL,
-            'propagate': False
-        },
-        'uvicorn.error': {
-            'handlers': ['stdout', 'api_file'],
-            'level': API_LOG_LEVEL,
-            'propagate': False
-        }
-    } 
-}
+        'loggers': {
+            'engine': {
+                'handlers': ['stdout'],
+                'level': STDOUT_LOG_LEVEL,
+                'propagate': False
+            },
+            'api': {
+                'handlers': ['stdout'],
+                'level': STDOUT_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn': {
+                'handlers': ['stdout'],
+                'level': STDOUT_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn.access': {
+                'handlers': ['stdout'],
+                'level': STDOUT_LOG_LEVEL,
+                'propagate': False
+            },
+            'uvicorn.error': {
+                'handlers': ['stdout'],
+                'level': STDOUT_LOG_LEVEL,
+                'propagate': False
+            }
+        } 
+    }
