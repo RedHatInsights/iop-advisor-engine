@@ -110,7 +110,7 @@ else:
         'disable_existing_loggers': True,
         'formatters': {
             'simple': {
-                'format': '<%(levelno)s> - %(asctime)s - %(message)s'
+                'format': '<%(levelname)s> - %(asctime)s - %(message)s'
             }
         },
         'handlers': { 
