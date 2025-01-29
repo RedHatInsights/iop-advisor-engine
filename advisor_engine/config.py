@@ -118,7 +118,6 @@ else:
                 'level': STDOUT_LOG_LEVEL,
                 'formatter': 'simple',
                 'class': 'logging.StreamHandler',
-                'stream': 'ext://sys.stdout',  # Default is stderr
             }
         },
         'loggers': {
