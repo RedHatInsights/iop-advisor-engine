@@ -110,14 +110,14 @@ else:
         'disable_existing_loggers': True,
         'formatters': {
             'simple': {
-                'format': '<%(levelname)s> - %(asctime)s - %(message)s'
+                'format': '<%(levelno)s> - %(asctime)s - %(message)s'
             }
         },
         'handlers': { 
             'stdout': { 
                 'level': STDOUT_LOG_LEVEL,
                 'formatter': 'simple',
-                'class': 'logging.StreamHandler',
+                'class': 'logging.StreamHandler'
             }
         },
         'loggers': {
