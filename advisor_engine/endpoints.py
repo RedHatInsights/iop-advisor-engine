@@ -4,6 +4,7 @@ from uuid import UUID
 import aiofiles
 from fastapi import UploadFile, File, Body, FastAPI
 from fastapi.responses import Response, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from advisor_engine import foreman, config, content
 from advisor_engine.archive_processor import process_background
@@ -20,14 +21,6 @@ def handle_system_get_legacy():
 
 def handle_system_get(insights_id: UUID = '00000000-0000-0000-0000-000000000000'):
     return {"total": 1, "results": [{"id": insights_id}]}
-
-
-def handle_egg():
-    return FileResponse(os.path.join(config.STATIC_CONTENT_DIR, 'insights-core.egg'), media_type="application/octet-stream")
-
-
-def handle_egg_asc():
-    return FileResponse(os.path.join(config.STATIC_CONTENT_DIR, 'insights-core.egg.asc'))
 
 
 async def handle_insights_archive(file: UploadFile = File(...)):
@@ -87,8 +80,7 @@ app = FastAPI()
 app.post('/api/ingress/v1/upload/{path:path}')(handle_insights_archive)
 app.post('/r/insights/uploads/{path:path}')(handle_insights_archive)
 app.get('/api/module-update-router/v1/channel')(handle_module_update_router)
-app.get('/r/insights/v1/static/release/insights-core.egg.asc')(handle_egg_asc)
-app.get('/r/insights/v1/static/release/insights-core.egg')(handle_egg)
+app.mount('/r/insights/v1/static/release/', StaticFiles(directory=config.STATIC_CONTENT_DIR), name='static')
 app.get('/r/insights/v1/systems/{path:path}')(handle_system_get_legacy)
 app.get('/api/inventory/v1/hosts')(handle_system_get)
 app.post('/api/remediations/v1/playbook')(handle_playbook)
