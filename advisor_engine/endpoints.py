@@ -1,5 +1,6 @@
 import json
 import os
+import os.path
 from uuid import UUID
 import aiofiles
 from fastapi import UploadFile, File, Body, FastAPI
@@ -10,6 +11,10 @@ from advisor_engine import foreman, config, content
 from advisor_engine.archive_processor import process_background
 
 rules = content.get_rule_content()
+
+# Create the static directory if it does not exist
+if not os.path.exists(config.STATIC_CONTENT_DIR):
+    os.makedirs(config.STATIC_CONTENT_DIR)
 
 def handle_module_update_router():
     return {'url': '/release'}
