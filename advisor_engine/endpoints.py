@@ -6,10 +6,12 @@ from fastapi import UploadFile, File, Body, FastAPI
 from fastapi.responses import Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from advisor_engine import foreman, config, content
+from advisor_engine import foreman, config, content, loggers
 from advisor_engine.archive_processor import process_background
 
 rules = content.get_rule_content()
+
+api_logger = loggers.api_logging()
 
 def handle_module_update_router():
     return {'url': '/release'}
@@ -80,7 +82,10 @@ app = FastAPI()
 app.post('/api/ingress/v1/upload/{path:path}')(handle_insights_archive)
 app.post('/r/insights/uploads/{path:path}')(handle_insights_archive)
 app.get('/api/module-update-router/v1/channel')(handle_module_update_router)
-app.mount('/r/insights/v1/static/release/', StaticFiles(directory=config.STATIC_CONTENT_DIR), name='static')
+try:
+    app.mount('/r/insights/v1/static/release/', StaticFiles(directory=config.STATIC_CONTENT_DIR), name='static')
+except Exception as e:
+    api_logger.warning('Static directory not found. Cannot serve static files.')
 app.get('/r/insights/v1/systems/{path:path}')(handle_system_get_legacy)
 app.get('/api/inventory/v1/hosts')(handle_system_get)
 app.post('/api/remediations/v1/playbook')(handle_playbook)
