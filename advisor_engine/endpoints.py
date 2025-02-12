@@ -1,5 +1,6 @@
 import json
 import os
+import os.path
 from uuid import UUID
 import aiofiles
 from fastapi import UploadFile, File, Body, FastAPI
