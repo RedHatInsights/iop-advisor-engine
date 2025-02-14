@@ -1,0 +1,37 @@
+[build-system]
+requires = [
+    "setuptools >= 40.8.0",
+    "wheel >= 0.29.0",
+]
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = "iop-advisor-engine"
+version = "0.1"
+readme = "README.md"
+classifiers=[
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "apypie>=0.6.0",
+    "setuptools",
+    "fastapi",
+    "python-multipart",
+    "uvicorn",
+    "aiofiles",
+    'logstash-formatter',
+    'insights-core',
+]
+
+[project.urls]
+Homepage = "https://github.com/RedHatInsights/iop-advisor-engine"
+Repository = "https://github.com/RedHatInsights/iop-advisor-engine"
+"Bug Tracker" = "https://github.com/RedHatInsights/iop-advisor-engine/issues"
+
+[tool.setuptools]
+package-dir = {"" = "advisor_engine"}

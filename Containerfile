@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi9/python-312
 USER 1001
 
-COPY setup.py .
+COPY pyproject.toml .
 RUN mkdir advisor_engine
 RUN pip install .
 
