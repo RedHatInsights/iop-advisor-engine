@@ -30,7 +30,7 @@ def get_hosts_details(system_ids, batch_size = 1000):
         try:
             results.extend(api.resource_action('advisor_engine', 'host_details', params={"host_uuids": batch}))
         except Exception as e:
-            logger.error("An error occurred:", e)
+            logger.error(f"An error occurred: {e}")
 
     return results
 
@@ -52,4 +52,4 @@ def store_advisor_hits(host_name, host_uuid, rules, resolutions, hits, details):
     try:
         api.resource_action('advisor_engine', 'upload_hits', params=data)
     except Exception as e:
-        logger.error("An error occurred:", e)
+        logger.error(f"An error occurred: {e}")
