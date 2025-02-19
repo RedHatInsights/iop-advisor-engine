@@ -1,5 +1,9 @@
-from advisor_engine import config, loggers
 import os, sys, subprocess
+from advisor_engine import config, loggers
+from insights.core import dr
+from insights.core.evaluators import InsightsEvaluator
+from insights.core.hydration import initialize_broker
+from insights.core.archives import extract
 
 engine_logger = loggers.engine_logging()
 loaded = False
@@ -17,19 +21,7 @@ def install_rules():
             engine_logger.warning('Exception installing custom rules:', e)
 
 
-def get_engine_results(file):
-    """
-    This function takes in a path to an archive and returns a list of rule hits.
-
-    The reason the imports are done lazily within the function is so that we can load in new rules at run time.
-    The code is expected to be run by a worker from ProcessPoolExecutor(). This allows new workers to pick up the
-    newest rules and insights_core code. If we did not do it lazily, then the ProcessPoolExcutor call to fork()
-    would copy whatever modules were loaded during application start.
-    """
-    from insights.core import dr
-    from insights.core.evaluators import InsightsEvaluator
-    from insights.core.hydration import initialize_broker
-    from insights.core.archives import extract
+def setup_broker_and_components():
     global loaded
     if not loaded:
         # Load the base insights-core specs
@@ -51,6 +43,8 @@ def get_engine_results(file):
                                   'Running Engine with no rule plugins.')
         loaded = True
 
+
+def get_engine_results(file):
     with extract(
             file, timeout=10, extract_dir=config.UPLOAD_EXTRACTION_DIR
     ) as extraction:
