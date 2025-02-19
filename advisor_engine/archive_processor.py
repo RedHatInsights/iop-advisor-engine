@@ -3,20 +3,15 @@ import os
 import shutil
 import traceback
 from advisor_engine import config, loggers, foreman, content
-from advisor_engine.insights_core_engine import (
-    install_rules, setup_broker_and_components, get_engine_results
-)
+from advisor_engine.insights_core_engine import Engine
 import concurrent.futures
 
 logger = loggers.engine_logging()
 rule_content = content.get_rule_content()
+AdvisorEngine = Engine()
+
 
 executor = concurrent.futures.ProcessPoolExecutor(max_workers=config.WORKER_COUNT)
-
-
-def setup_engine():
-    install_rules()
-    setup_broker_and_components()
 
 
 def resume_existing_archives():
@@ -56,7 +51,7 @@ def process_background(file, tries=1, error=None):
 
 
 def process(file):
-    engine_results = get_engine_results(file)
+    engine_results = AdvisorEngine.get_engine_results(file)
     store_results(engine_results)
 
 
