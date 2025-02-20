@@ -11,7 +11,6 @@ class Engine():
     def __init__(self):
         self.install_rules()
         self.setup_broker_and_components()
-        self.loaded = True
 
 
     def install_rules(self):
