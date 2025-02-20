@@ -18,12 +18,9 @@ class Engine():
         engine_logger.info('Checking if custom rules have been installed...')
         if os.path.isdir(config.RULES_DIR):
             engine_logger.info('Custom rules directory exists. Installing custom rules.')
-            try:
-                wheel_files = [os.path.join(config.RULES_DIR, f) for f in os.listdir(config.RULES_DIR) if os.path.isfile(os.path.join(config.RULES_DIR, f))]
-                engine_logger.info(f'Found rule wheel files to install: {wheel_files}')
-                subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check', *wheel_files])
-            except Exception as e:
-                engine_logger.warning('Exception installing custom rules:', e)
+            wheel_files = [os.path.join(config.RULES_DIR, f) for f in os.listdir(config.RULES_DIR) if os.path.isfile(os.path.join(config.RULES_DIR, f))]
+            engine_logger.info(f'Found rule wheel files to install: {wheel_files}')
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check', *wheel_files])
 
 
     def setup_broker_and_components(self):
