@@ -28,7 +28,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-archive_processor.setup_components()
 archive_processor.resume_existing_archives()
 uvicorn.run(app, host=config.ADVISOR_ENGINE_BIND,
                  port=config.ADVISOR_ENGINE_PORT,
