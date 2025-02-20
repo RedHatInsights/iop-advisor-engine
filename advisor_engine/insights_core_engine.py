@@ -9,6 +9,8 @@ engine_logger = loggers.engine_logging()
 
 class Engine():
     def __init__(self):
+        self.components_dict = None
+        self.target_components = None
         self.install_rules()
         self.setup_broker_and_components()
 
@@ -38,6 +40,8 @@ class Engine():
             engine_logger.warning('No RULES_COMPONENTS defined in config. '
                                   'Running Engine with no rule plugins.')
 
+        self.components_dict = dr.COMPONENTS[dr.GROUPS.single]
+        self.target_components = dr.toposort_flatten(self.components_dict, sort=False)
 
     def get_engine_results(self, file):
         with extract(
@@ -45,5 +49,5 @@ class Engine():
         ) as extraction:
             ctx, broker = initialize_broker(extraction.tmp_dir, broker=dr.Broker())
             with InsightsEvaluator(broker) as evaluator:
-                dr.run({}, broker=broker)
+                dr.run_components(self.target_components, self.components_dict, broker=broker)
                 return evaluator.get_response()
