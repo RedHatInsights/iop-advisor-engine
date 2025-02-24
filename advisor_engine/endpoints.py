@@ -88,6 +88,27 @@ def handle_diagnosis(insights_id):
     }
 
 
+def handle_status():
+    config_var_dir = dir(config)
+    config_vars = {}
+    for config_var in config_var_dir:
+        if (not config_var.startswith('__') and
+                config_var not in ['os', 'socket']):
+            config_vars[config_var] = getattr(config, config_var)
+
+    current_count = (len([name for name in os.listdir(config.UPLOAD_DIR)]) 
+                        if os.path.exists(config.UPLOAD_DIR) else f'{config.UPLOAD_DIR} dir not found.')
+    failed_count = (len([name for name in os.listdir(config.FAILED_DIR)])
+                        if os.path.exists(config.FAILED_DIR) else f'{config.FAILED_DIR} dir not found.')
+
+    return {
+        'engine': 'up',  # Engine assumed up. Will fail on initialization if not
+        'failed': failed_count,
+        'current': current_count,
+        'config': config_vars
+    }
+
+  
 def handle_api_ping():
     # Just want to send back a 200 for the Client/Satellite
     return Response(status_code=status.HTTP_200_OK)
@@ -103,4 +124,5 @@ app.get('/r/insights/v1/systems/{path:path}')(handle_system_get_legacy)
 app.get('/api/inventory/v1/hosts')(handle_system_get)
 app.post('/api/remediations/v1/playbook')(handle_playbook)
 app.get('/api/remediations/v1/diagnosis/{insights_id}')(handle_diagnosis)
+app.get('/status')(handle_status)
 app.get('/api/apicast-tests/ping')(handle_api_ping)
