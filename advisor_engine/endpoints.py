@@ -3,7 +3,7 @@ import os
 import os.path
 from uuid import UUID
 import aiofiles
-from fastapi import UploadFile, File, Body, FastAPI, status
+from fastapi import UploadFile, File, Body, FastAPI, Form, status
 from fastapi.responses import Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
