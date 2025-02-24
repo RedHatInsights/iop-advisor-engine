@@ -31,16 +31,18 @@ def handle_system_get(insights_id: UUID = '00000000-0000-0000-0000-000000000000'
     return {"total": 1, "results": [{"id": insights_id}]}
 
 
-async def handle_insights_archive(file: Optional[UploadFile] = File(None)):
-    try:
+async def handle_insights_archive(file: Optional[UploadFile] = File(None),
+                                  test: str=Form(None)):
+    # insights-client --test-connection
+    # Just want to send back a 200 for the Client/Satellite
+    if test: return Response(status_code=status.HTTP_200_OK)
+    else:        
         file_location = os.path.join(config.UPLOAD_DIR, file.filename)
         async with aiofiles.open(file_location, 'wb') as out_file:
             while content := await file.read(1024 * 1024):
                 await out_file.write(content)
         process_background(file_location)
-    except Exception as e:
-        api_logging.exception('Erorr processing archive:', e)
-    return {'message': 'File uploaded successfully'}
+        return {'message': 'File uploaded successfully'}
 
 
 def handle_playbook(post_data=Body(...)):
