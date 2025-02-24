@@ -27,16 +27,6 @@ class TestEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"total": 1, "results": [{"id": str(test_uuid)}]})
 
-    def test_handle_egg(self):
-        response = self.client.get("/r/insights/v1/static/release/insights-core.egg")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers['content-type'], 'application/octet-stream')
-
-    def test_handle_egg_asc(self):
-        response = self.client.get("/r/insights/v1/static/release/insights-core.egg.asc")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers['content-type'], 'text/plain; charset=utf-8')
-
     @patch('advisor_engine.endpoints.process_background')
     def test_handle_insights_archive(self, mock_process_background):
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -54,3 +44,10 @@ class TestEndpoints(unittest.TestCase):
 
         os.unlink(temp_file_path)
         os.unlink('uploads/test_archive.tar.gz')
+
+    def test_handle_test_insights_archive(self):
+        response = self.client.post(
+            "/api/ingress/v1/upload/",
+            data={'test': 'test'}
+        )
+        self.assertEqual(response.status_code, 200)

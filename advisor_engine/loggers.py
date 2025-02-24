@@ -1,6 +1,5 @@
-import logging
-import logstash_formatter
-from advisor_engine import config, loggers
+import logging.config
+from advisor_engine import config
 
 logging.config.dictConfig(config.LOGGING_CONFIG)
 
