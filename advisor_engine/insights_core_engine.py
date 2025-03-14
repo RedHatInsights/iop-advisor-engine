@@ -1,9 +1,5 @@
 import os, sys, subprocess
 from advisor_engine import config, loggers
-from insights.core import dr
-from insights.core.evaluators import InsightsEvaluator
-from insights.core.hydration import initialize_broker
-from insights.core.archives import extract
 
 engine_logger = loggers.engine_logging()
 
@@ -12,6 +8,7 @@ class Engine():
         self.components_dict = None
         self.target_components = None
         self.install_rules()
+        self.do_imports()
         self.setup_broker_and_components()
 
 
@@ -22,6 +19,14 @@ class Engine():
             wheel_files = [os.path.join(config.RULES_DIR, f) for f in os.listdir(config.RULES_DIR) if os.path.isfile(os.path.join(config.RULES_DIR, f))]
             engine_logger.info(f'Found rule wheel files to install: {wheel_files}')
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check', *wheel_files])
+
+
+    def do_imports(self):
+        from insights.core import dr
+        from insights.core.evaluators import InsightsEvaluator
+        from insights.core.hydration import initialize_broker
+        from insights.core.archives import extract
+        global dr, InsightsEvaluator, initialize_broker, extract
 
 
     def setup_broker_and_components(self):
