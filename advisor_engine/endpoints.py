@@ -1,7 +1,7 @@
 import json
 import os
 import os.path
-from uuid import UUID
+from uuid import UUID, uuid4
 import aiofiles
 from fastapi import UploadFile, File, Body, FastAPI, Form, status
 from fastapi.responses import Response, FileResponse
@@ -37,7 +37,7 @@ async def handle_insights_archive(file: Optional[UploadFile] = File(None),
     # Just want to send back a 200 for the Client/Satellite
     if test: return Response(status_code=status.HTTP_200_OK)
     else:        
-        file_location = os.path.join(config.UPLOAD_DIR, file.filename)
+        file_location = os.path.join(config.UPLOAD_DIR, str(uuid4()))
         async with aiofiles.open(file_location, 'wb') as out_file:
             while content := await file.read(1024 * 1024):
                 await out_file.write(content)
