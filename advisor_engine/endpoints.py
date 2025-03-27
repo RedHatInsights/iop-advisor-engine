@@ -37,7 +37,9 @@ async def handle_insights_archive(file: Optional[UploadFile] = File(None),
     # Just want to send back a 200 for the Client/Satellite
     if test: return Response(status_code=status.HTTP_200_OK)
     else:        
-        async with aiofiles.tempfile.NamedTemporaryFile('wb', dir=config.UPLOAD_DIR, delete=False) as out_file:
+        async with aiofiles.tempfile.NamedTemporaryFile('wb', dir=config.UPLOAD_DIR,
+                                                              delete=False,
+                                                              suffix='.tar.gz') as out_file:
             while content := await file.read(1024 * 1024):
                 await out_file.write(content)
         process_background(out_file.name)
