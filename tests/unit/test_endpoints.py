@@ -1,3 +1,4 @@
+import glob
 import os
 import tempfile
 import unittest
@@ -49,7 +50,9 @@ class TestEndpoints(unittest.TestCase):
         self.assertEqual(response.json(), {'message': 'File uploaded successfully'})
 
         os.unlink(temp_file_path)
-        os.unlink('uploads/test_archive.tar.gz')
+        files = glob.glob("uploads/*.gz")
+        for file in files:
+            os.remove(file)
 
     def test_handle_test_insights_archive(self):
         response = self.client.post(
