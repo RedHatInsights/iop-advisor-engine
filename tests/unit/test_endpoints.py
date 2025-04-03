@@ -27,6 +27,12 @@ class TestEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"total": 1, "results": [{"id": str(test_uuid)}]})
 
+    def test_handle_system_exists(self):
+        test_uuid = UUID("12345678-1234-5678-1234-567812345678")
+        response = self.client.get(f"/api/inventory/v1/host_exists?insights_id={test_uuid}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"id": str(test_uuid)})
+
     @patch('advisor_engine.endpoints.process_background')
     def test_handle_insights_archive(self, mock_process_background):
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:

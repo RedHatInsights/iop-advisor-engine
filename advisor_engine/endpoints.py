@@ -30,6 +30,8 @@ def handle_system_get_legacy():
 def handle_system_get(insights_id: UUID = '00000000-0000-0000-0000-000000000000'):
     return {"total": 1, "results": [{"id": insights_id}]}
 
+def handle_system_exists(insights_id: UUID = '00000000-0000-0000-0000-000000000000'):
+    return {"id": insights_id}
 
 async def handle_insights_archive(file: Optional[UploadFile] = File(None),
                                   test: str=Form(None)):
@@ -123,6 +125,7 @@ app.get('/api/module-update-router/v1/channel')(handle_module_update_router)
 app.mount('/r/insights/v1/static/release/', StaticFiles(directory=config.STATIC_CONTENT_DIR), name='static')
 app.get('/r/insights/v1/systems/{path:path}')(handle_system_get_legacy)
 app.get('/api/inventory/v1/hosts')(handle_system_get)
+app.get('/api/inventory/v1/host_exists')(handle_system_exists)
 app.post('/api/remediations/v1/playbook')(handle_playbook)
 app.get('/api/remediations/v1/diagnosis/{insights_id}')(handle_diagnosis)
 app.get('/status')(handle_status)
