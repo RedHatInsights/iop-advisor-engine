@@ -18,7 +18,7 @@ classifiers=[
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "apypie>=0.6.0",
+    "apypie>=0.7.1",
     "setuptools",
     "fastapi",
     "python-multipart",
