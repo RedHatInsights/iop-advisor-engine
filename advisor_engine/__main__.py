@@ -31,4 +31,10 @@ signal.signal(signal.SIGTERM, signal_handler)
 archive_processor.resume_existing_archives()
 uvicorn.run(app, host=config.ADVISOR_ENGINE_BIND,
                  port=config.ADVISOR_ENGINE_PORT,
-                 log_config=loggers.get_api_config(), **tls_options)
+                 log_config=loggers.get_api_config(),
+                 limit_max_requests = config.ADVISOR_ENGINE_LIMIT_MAX_REQUESTS,
+                 backlog = config.ADVISOR_ENGINE_BACKLOG,
+                 timeout_keep_alive=config.ADVISOR_ENGINE_TIMEOUT_KEEP_ALIVE,
+                 limit_concurrency=config.ADVISOR_ENGINE_LIMIT_CONCURRENCY,
+                 timeout_graceful_shutdown=config.ADVISOR_ENGINE_TIMEOUT_GRACEFUL_SHUTDOWN,
+                 **tls_options)
