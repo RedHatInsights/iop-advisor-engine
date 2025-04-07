@@ -3,9 +3,10 @@ import os
 import os.path
 from uuid import UUID
 import aiofiles
-from fastapi import UploadFile, File, Body, FastAPI, Form, status
-from fastapi.responses import Response, FileResponse
+from fastapi import UploadFile, File, Body, FastAPI, Form, status, Request, HTTPException
+from fastapi.responses import Response, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Optional
 
 from advisor_engine import foreman, config, content, loggers
@@ -117,7 +118,38 @@ def handle_api_ping():
     return Response(status_code=status.HTTP_200_OK)
 
 
+class LimitRequestBodyMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        body = await request.body()
+        
+        # Total request body size
+        if len(body) > config.ADVISOR_ENGINE_MAX_REQUEST_BODY_SIZE:
+            return JSONResponse(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                                content={"detail": "Request body too large"})
+
+        return await call_next(request)
+
+
+class HeaderSizeLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Check number of headers
+        if len(request.headers) > config.ADVISOR_ENGINE_MAX_HEADER_FIELDS:
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
+                                content={"detail": "Too many headers"})
+        
+        # Check header size
+        for k, v in request.headers.items():
+            if len(k) + len(v) > config.ADVISOR_ENGINE_MAX_HEADER_FIELD_SIZE:
+                return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
+                                    content={"detail": "Header field too large"})
+        
+        return await call_next(request)
+
+
 app = FastAPI()
+
+app.add_middleware(LimitRequestBodyMiddleware)
+app.add_middleware(HeaderSizeLimitMiddleware)
 
 app.post('/api/ingress/v1/upload/{path:path}')(handle_insights_archive)
 app.post('/r/insights/uploads/{path:path}')(handle_insights_archive)
