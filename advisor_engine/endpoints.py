@@ -34,12 +34,19 @@ def handle_system_get(insights_id: UUID = '00000000-0000-0000-0000-000000000000'
 def handle_system_exists(insights_id: UUID = '00000000-0000-0000-0000-000000000000'):
     return {"id": insights_id}
 
-async def handle_insights_archive(file: Optional[UploadFile] = File(None),
+async def handle_insights_archive(request: Request,
+                                  file: Optional[UploadFile] = File(None),
                                   test: str=Form(None)):
     # insights-client --test-connection
     # Just want to send back a 200 for the Client/Satellite
     if test: return Response(status_code=status.HTTP_200_OK)
-    else:        
+    else:
+        content_length = int(request.headers.get('content-length'))
+        if ((content_length is None) or
+            (content_length > config.ADVISOR_ENGINE_MAX_CONTENT_LENGTH)):
+            return JSONResponse(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                                content={"detail": "Request body too large or missing."})
+
         async with aiofiles.tempfile.NamedTemporaryFile('wb', dir=config.UPLOAD_DIR,
                                                               delete=False,
                                                               suffix='.tar.gz') as out_file:
@@ -118,18 +125,6 @@ def handle_api_ping():
     return Response(status_code=status.HTTP_200_OK)
 
 
-class LimitRequestBodyMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        body = await request.body()
-        
-        # Total request body size
-        if len(body) > config.ADVISOR_ENGINE_MAX_REQUEST_BODY_SIZE:
-            return JSONResponse(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                                content={"detail": "Request body too large"})
-
-        return await call_next(request)
-
-
 class HeaderSizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Check number of headers
@@ -148,7 +143,6 @@ class HeaderSizeLimitMiddleware(BaseHTTPMiddleware):
 
 app = FastAPI()
 
-app.add_middleware(LimitRequestBodyMiddleware)
 app.add_middleware(HeaderSizeLimitMiddleware)
 
 app.post('/api/ingress/v1/upload/{path:path}')(handle_insights_archive)
