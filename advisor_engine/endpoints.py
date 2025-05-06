@@ -42,8 +42,7 @@ async def handle_insights_archive(request: Request,
     if test: return Response(status_code=status.HTTP_200_OK)
     else:
         content_length = int(request.headers.get('content-length'))
-        if ((content_length is None) or
-            (content_length > config.ADVISOR_ENGINE_MAX_CONTENT_LENGTH)):
+        if content_length > config.ADVISOR_ENGINE_MAX_CONTENT_LENGTH:
             return JSONResponse(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                                 content={"detail": "Request body too large or missing."})
 
