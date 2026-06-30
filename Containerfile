@@ -3,6 +3,7 @@ USER 1001
 
 COPY pyproject.toml .
 RUN mkdir advisor_engine
+RUN pip install --upgrade pip
 RUN pip install .
 
 COPY special_playbooks special_playbooks
