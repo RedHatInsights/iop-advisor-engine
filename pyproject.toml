@@ -28,6 +28,7 @@ dependencies = [
     "aiofiles",
     'logstash-formatter',
     'insights-core',
+    'msgpack>=1.2.3',
 ]
 
 [project.urls]
